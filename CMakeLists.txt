@@ -15,7 +15,7 @@ find_package(Sophus REQUIRED)
 #find_package(Pangolin REQUIRED) # used to show pointcloud
 
 find_package(G2O REQUIRED)
-if(G2O_FOUND)
+if (G2O_FOUND)
     message(STATUS "G2O found. Version: ${G2O_VERSION}")
 endif (G2O_FOUND)
 
@@ -68,13 +68,13 @@ include_directories(
         ${G2O_INCLUDE_DIRS}
         ${Sophus_INCLUDE_DIRS}
         ${EIGEN3_INCLUDE_DIR}
-#        "/usr/include/eigen3/"
+        #        "/usr/include/eigen3/"
         ${Pangolin_INCLUDE_DIRS}
         ${CSPARSE_INCLUDE_DIR}
-#        ${REALSENSE_INCLUDE_DIR}
+        #        ${REALSENSE_INCLUDE_DIR}
         ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
-#        ${GLFW_INCLUDE_DIRS}
-#        ${Boost_INCLUDE_DIR}
+        #        ${GLFW_INCLUDE_DIRS}
+        #        ${Boost_INCLUDE_DIR}
         ${CERES_INCLUDE_DIRS}
 )
 
@@ -87,7 +87,7 @@ target_link_libraries(testing_codes
         ${OpenCV_LIBS}
         ${Pangolin_LIBRARIES}
         ${GLOG_LIBRARIES}
-#        ${GLFW_LIBRARIES}
+        #        ${GLFW_LIBRARIES}
         g2o_core
         g2o_stuff
         g2o_types_sba
@@ -96,7 +96,22 @@ target_link_libraries(testing_codes
         Sophus::Sophus
         -lboost_serialization
         ${CERES_LIBRARIES}
-        )
+)
 
-add_executable(cuda_test cuda_test.cu cuda_test.cuh)
-target_include_directories(cuda_test PUBLIC ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES} ${GLOG_INCLUDE_DIRS})
+file(GLOB_RECURSE SRC_LIST Source/*.cu)
+
+foreach (EACH_SRC ${SRC_LIST})
+
+    string(REGEX REPLACE ".+/(.+)\\..*" "\\1" EACH_EXE ${EACH_SRC})
+
+    # generate the library
+    add_executable(${EACH_EXE} ${EACH_SRC})
+#    target_link_libraries(${EACH_EXE}
+#    )
+    target_include_directories(${EACH_EXE} PUBLIC
+            ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
+            ${GLOG_INCLUDE_DIRS}
+            ${PROJECT_SOURCE_DIR}/Common
+    )
+
+endforeach ()
