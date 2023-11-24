@@ -1,6 +1,5 @@
-cmake_minimum_required(VERSION 3.8)
-#project(Test)
-project(Test LANGUAGES CXX CUDA)
+cmake_minimum_required(VERSION 3.6)
+project(cuda_samples LANGUAGES CXX CUDA)
 
 set(CMAKE_BUILD_TYPE "debug")
 #add_definitions("-DENABLE_SSE")
@@ -98,20 +97,20 @@ target_link_libraries(testing_codes
         ${CERES_LIBRARIES}
 )
 
-file(GLOB_RECURSE SRC_LIST Source/*.cu)
+file(GLOB_RECURSE
+        SRC_LIST ${CMAKE_SOURCE_DIR}/Source/*.cu
+)
 
 foreach (EACH_SRC ${SRC_LIST})
-
     string(REGEX REPLACE ".+/(.+)\\..*" "\\1" EACH_EXE ${EACH_SRC})
-
+    message(STATUS "EACH_EXE: ${EACH_EXE}")
     # generate the library
     add_executable(${EACH_EXE} ${EACH_SRC})
-#    target_link_libraries(${EACH_EXE}
-#    )
+    #    target_link_libraries(${EACH_EXE}
+    #    )
     target_include_directories(${EACH_EXE} PUBLIC
             ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
             ${GLOG_INCLUDE_DIRS}
             ${PROJECT_SOURCE_DIR}/Common
     )
-
 endforeach ()
