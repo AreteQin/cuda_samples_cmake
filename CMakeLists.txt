@@ -106,8 +106,9 @@ foreach (EACH_SRC ${SRC_LIST})
     message(STATUS "EACH_EXE: ${EACH_EXE}")
     # generate the library
     add_executable(${EACH_EXE} ${EACH_SRC})
-    #    target_link_libraries(${EACH_EXE}
-    #    )
+        target_link_libraries(${EACH_EXE}
+                ${OpenCV_LIBS}
+        )
     target_include_directories(${EACH_EXE} PUBLIC
             ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
             ${GLOG_INCLUDE_DIRS}

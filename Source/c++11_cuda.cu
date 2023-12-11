@@ -43,6 +43,7 @@ using namespace util::lang;
 template <typename T>
 using step_range = typename range_proxy<T>::step_range_proxy;
 
+// generate the specific range of elements that each thread processes.
 template <typename T>
 __device__ step_range<T> grid_stride_range(T begin, T end) {
   begin += blockDim.x * blockIdx.x + threadIdx.x;
@@ -94,7 +95,7 @@ void xyzw_frequency_thrust_host(int *count, char *text, int n)
 #endif
 
 int main(int argc, char **argv) {
-  const char *filename = sdkFindFilePath("warandpeace.txt", argv[0]);
+  const char *filename = sdkFindFilePath("../README.md", argv[0]);
 
   int numBytes = 16 * 1048576;
   char *h_text = (char *)malloc(numBytes);

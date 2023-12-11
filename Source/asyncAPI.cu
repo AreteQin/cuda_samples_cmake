@@ -138,5 +138,7 @@ int main(int argc, char *argv[]) {
   checkCudaErrors(cudaFreeHost(a));
   checkCudaErrors(cudaFree(d_a));
 
+  printf(bFinalResults ? "Test passed\n" : "Test failed!\n");
+
   exit(bFinalResults ? EXIT_SUCCESS : EXIT_FAILURE);
 }
