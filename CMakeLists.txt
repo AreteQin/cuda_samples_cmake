@@ -1,4 +1,5 @@
-cmake_minimum_required(VERSION 3.6)
+cmake_minimum_required(VERSION 3.10)
+#project(cuda_samples)
 project(cuda_samples LANGUAGES CXX CUDA)
 
 set(CMAKE_BUILD_TYPE "debug")
@@ -27,33 +28,33 @@ find_package(OpenMP REQUIRED)
 find_package(Ceres REQUIRED)
 
 find_package(CUDA REQUIRED)
-if (CUDA_FOUND)
-    message("-- Found CUDA version ${CUDA_VERSION} installed in: "
-            "${CUDA_TOOLKIT_ROOT_DIR} via legacy (< 3.17) CMake module. "
-            "Using the legacy CMake module means that any installation of "
-            "Ceres will require that the CUDA libraries be installed in a "
-            "location included in the LD_LIBRARY_PATH.")
-    enable_language(CUDA)
-
-    macro(DECLARE_IMPORTED_CUDA_TARGET COMPONENT)
-        add_library(CUDA::${COMPONENT} INTERFACE IMPORTED)
-        target_include_directories(
-                CUDA::${COMPONENT} INTERFACE ${CUDA_INCLUDE_DIRS})
-        target_link_libraries(
-                CUDA::${COMPONENT} INTERFACE ${CUDA_${COMPONENT}_LIBRARY} ${ARGN})
-    endmacro()
-
-    declare_imported_cuda_target(cublas)
-    declare_imported_cuda_target(cusolver)
-    declare_imported_cuda_target(cusparse)
-    declare_imported_cuda_target(cudart ${CUDA_LIBRARIES})
-
-    set(CUDAToolkit_BIN_DIR ${CUDA_TOOLKIT_ROOT_DIR}/bin)
-else (CUDA_FOUND)
-    message("-- Did not find CUDA, disabling CUDA support.")
-    update_cache_variable(USE_CUDA OFF)
-endif (CUDA_FOUND)
-set(CUDA_ADD_CUBLAS_TO_TARGET ON)
+#if (CUDA_FOUND)
+#    message("-- Found CUDA version ${CUDA_VERSION} installed in: "
+#            "${CUDA_TOOLKIT_ROOT_DIR} via legacy (< 3.17) CMake module. "
+#            "Using the legacy CMake module means that any installation of "
+#            "Ceres will require that the CUDA libraries be installed in a "
+#            "location included in the LD_LIBRARY_PATH.")
+#    enable_language(CUDA)
+#
+#    macro(DECLARE_IMPORTED_CUDA_TARGET COMPONENT)
+#        add_library(CUDA::${COMPONENT} INTERFACE IMPORTED)
+#        target_include_directories(
+#                CUDA::${COMPONENT} INTERFACE ${CUDA_INCLUDE_DIRS})
+#        target_link_libraries(
+#                CUDA::${COMPONENT} INTERFACE ${CUDA_${COMPONENT}_LIBRARY} ${ARGN})
+#    endmacro()
+#
+#    declare_imported_cuda_target(cublas)
+#    declare_imported_cuda_target(cusolver)
+#    declare_imported_cuda_target(cusparse)
+#    declare_imported_cuda_target(cudart ${CUDA_LIBRARIES})
+#
+#    set(CUDAToolkit_BIN_DIR ${CUDA_TOOLKIT_ROOT_DIR}/bin)
+#else (CUDA_FOUND)
+#    message("-- Did not find CUDA, disabling CUDA support.")
+#    update_cache_variable(USE_CUDA OFF)
+#endif (CUDA_FOUND)
+#set(CUDA_ADD_CUBLAS_TO_TARGET ON)
 
 if (OPENMP_FOUND)
     message(STATUS "OpenMP found will try to link!")
@@ -71,47 +72,74 @@ include_directories(
         ${Pangolin_INCLUDE_DIRS}
         ${CSPARSE_INCLUDE_DIR}
         #        ${REALSENSE_INCLUDE_DIR}
-        ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
         #        ${GLFW_INCLUDE_DIRS}
         #        ${Boost_INCLUDE_DIR}
         ${CERES_INCLUDE_DIRS}
+        ${GLOG_INCLUDE_DIRS}
+        ${PROJECT_SOURCE_DIR}/Common
+#        ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
 )
 
-add_executable(testing_codes test.cpp) # "name "test" is not valid in TX2
-#target_include_directories(test PUBLIC ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES} ${GLOG_INCLUDE_DIRS})
-target_link_libraries(testing_codes
-        my_lib
-        matplotlib_cpp
-        ${realsense2_LIBRARY}
-        ${OpenCV_LIBS}
-        ${Pangolin_LIBRARIES}
-        ${GLOG_LIBRARIES}
-        #        ${GLFW_LIBRARIES}
-        g2o_core
-        g2o_stuff
-        g2o_types_sba
-        g2o_solver_csparse
-        g2o_csparse_extension
-        Sophus::Sophus
-        -lboost_serialization
-        ${CERES_LIBRARIES}
-)
+#add_executable(testing_codes test.cpp) # "name "test" is not valid in TX2
+##target_include_directories(test PUBLIC ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES} ${GLOG_INCLUDE_DIRS})
+#target_link_libraries(testing_codes
+#        my_lib
+#        matplotlib_cpp
+#        ${realsense2_LIBRARY}
+#        ${OpenCV_LIBS}
+#        ${Pangolin_LIBRARIES}
+#        ${GLOG_LIBRARIES}
+#        #        ${GLFW_LIBRARIES}
+#        g2o_core
+#        g2o_stuff
+#        g2o_types_sba
+#        g2o_solver_csparse
+#        g2o_csparse_extension
+#        Sophus::Sophus
+#        -lboost_serialization
+#        ${CERES_LIBRARIES}
+#)
 
-file(GLOB_RECURSE
+#file(GLOB_RECURSE # include subdirectories
+file(GLOB
         SRC_LIST ${CMAKE_SOURCE_DIR}/Source/*.cu
 )
 
 foreach (EACH_SRC ${SRC_LIST})
     string(REGEX REPLACE ".+/(.+)\\..*" "\\1" EACH_EXE ${EACH_SRC})
     message(STATUS "EACH_EXE: ${EACH_EXE}")
-    # generate the library
+    # generate the executable file
     add_executable(${EACH_EXE} ${EACH_SRC})
-        target_link_libraries(${EACH_EXE}
-                ${OpenCV_LIBS}
-        )
-    target_include_directories(${EACH_EXE} PUBLIC
-            ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
-            ${GLOG_INCLUDE_DIRS}
-            ${PROJECT_SOURCE_DIR}/Common
+    #    set_source_files_properties(${EACH_SRC} PROPERTIES LANGUAGE CUDA)
+    target_link_libraries(${EACH_EXE}
+            ${OpenCV_LIBS}
     )
+    #    target_include_directories(${EACH_EXE} PUBLIC
+    #            ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
+    #            ${GLOG_INCLUDE_DIRS}
+    #            ${PROJECT_SOURCE_DIR}/Common
+    #    )
 endforeach ()
+
+# clock_nvrtc
+#add_library(clock_kernel_lib
+#        ${CMAKE_SOURCE_DIR}/Source/clock_nvrtc/clock_kernel.cu)
+#target_include_directories(clock_kernel_lib PUBLIC
+#        ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
+#        ${PROJECT_SOURCE_DIR}/Common)
+#add_library(clock_kernel_lib
+#        ${CMAKE_SOURCE_DIR}/Source/clock_nvrtc/clock_kernel.cu)
+#target_include_directories(clock_kernel_lib PUBLIC
+#        ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
+#        ${PROJECT_SOURCE_DIR}/Common)
+#set_source_files_properties(${CMAKE_SOURCE_DIR}/Source/clock_nvrtc/clock.cu PROPERTIES LANGUAGE CUDA)
+#add_executable(clock_nvrtc
+#        ${CMAKE_SOURCE_DIR}/Source/clock_nvrtc/clock.cu)
+#target_include_directories(clock_nvrtc PUBLIC
+        #        ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
+        #        ${PROJECT_SOURCE_DIR}/Common
+#)
+#target_link_libraries(clock_nvrtc
+#        CUDA::cudart
+#        CUDA::cublas
+#)

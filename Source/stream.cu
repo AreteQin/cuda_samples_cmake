@@ -66,10 +66,14 @@ int main(void) {
     for (int i = 0; i < num_streams; i++) {
         int offset = i * chunk_size;
         // copy data from host to device
-        cudaMemcpyAsync(in_gpu + offset, input_image.data + offset, chunk_size, cudaMemcpyHostToDevice, streams[i]);
+        cudaMemcpyAsync(
+                in_gpu + offset, input_image.data + offset, chunk_size, cudaMemcpyHostToDevice,
+                streams[i]);
         SobelGPU<<<blocks_per_grid, threads_per_block, 0, streams[i]>>>
                 (in_gpu + offset, out_gpu + offset, input_image.rows, input_image.cols);
-        cudaMemcpyAsync(output_image.data + offset, out_gpu + offset, chunk_size, cudaMemcpyDeviceToHost, streams[i]);
+        cudaMemcpyAsync(
+                output_image.data + offset, out_gpu + offset, chunk_size, cudaMemcpyDeviceToHost,
+                streams[i]);
     }
 
     cudaDeviceSynchronize();
